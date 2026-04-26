@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>GuanTeen Bot</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    color: white;
+
+    background: #0f172a;
+    position: relative;
+    z-index: 1;
+}
+
+/* 🖼️ Background layer */
+.bg {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+
+    transform: translate(-50%, -50%);
+    
+    background: url("/static/AINON.jpg") center/cover no-repeat;
+    opacity: 0.25;
+
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* chat */
+#chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    position: relative;
+    z-index: 1;
+}
+
+.message {
+    max-width: 60%;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 10px;
+}
+
+.user {
+    align-self: flex-end;
+    background: #3b82f6;
+}
+
+.bot {
+    align-self: flex-start;
+    background: #1e293b;
+}
+
+/* input */
+#input-area {
+    display: flex;
+    padding: 10px;
+    background: #020617;
+
+    position: relative;
+    z-index: 1;
+}
+
+#message {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+
+button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border: none;
+    background: #22c55e;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- background -->
+<div class="bg"></div>
+
+<div id="chat-box"></div>
+
+<div id="input-area">
+    <input type="text" id="message" placeholder="พิมพ์อะไร รีบๆพิมพ์เดี๋ยว Token กูหมด อ่อบอทช้านิดนึง รอแปปใจเย็นๆ" />
+    <button onclick="sendMessage()">ส่ง</button>
+</div>
+
+<script>
+function addMessage(text, sender) {
+    const chatBox = document.getElementById("chat-box");
+
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.innerText = text;
+
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById("message");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    addMessage(text, "user");
+    input.value = "";
+
+    try {
+        const res = await fetch("/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+
+        addMessage(data.reply || "บอทงอแงว่ะ เอาใหม่ดิ๊", "bot");
+
+    } catch (err) {
+        addMessage("เชื่อมต่อไม่ได้ว่ะ", "bot");
+    }
+}
+
+document.getElementById("message").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
+</script>
+
+</body>
+</html>
